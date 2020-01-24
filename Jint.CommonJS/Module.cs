@@ -35,6 +35,14 @@ namespace Jint.CommonJS
         /// </summary>
         public JsValue Exports { get; set; }
 
+        public Module ParentModule
+        {
+            get
+            {
+                return parentModule;
+            }
+        }
+
         public readonly string filePath;
 
         /// <summary>

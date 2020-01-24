@@ -17,12 +17,23 @@ namespace Jint.CommonJS
 
         public string ResolvePath(string moduleId, Module parent)
         {
-            // if (!moduleId.StartsWith("."))
-            // {
-            //     throw new Exception($"Module path {moduleId} is not valid.  Internal modules are not supported at this time.");
-            // }
+            bool isExternalModule = !moduleId.StartsWith(".") && parent.filePath != null;
 
             var cwd = parent.filePath != null ? Path.GetDirectoryName(parent.filePath) : Environment.CurrentDirectory;
+
+            if (isExternalModule)
+            {
+                // for external modules we look in the directory of the main module
+                var rootModule = parent.ParentModule;
+
+                while (rootModule.ParentModule != null)
+                {
+                    rootModule = rootModule.ParentModule;
+                }
+
+                cwd = new DirectoryInfo(rootModule.Id).Parent.FullName;
+            }
+
             var path = Path.Combine(cwd, moduleId);
 
             /*
