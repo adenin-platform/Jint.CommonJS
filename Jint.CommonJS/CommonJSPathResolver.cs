@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Jint.CommonJS
 {
@@ -21,9 +23,9 @@ namespace Jint.CommonJS
 
             var cwd = parent.filePath != null ? Path.GetDirectoryName(parent.filePath) : Environment.CurrentDirectory;
 
-            if (isExternalModule)
+            if (isExternalModule && parent.ParentModule != null)
             {
-                // for external modules we look in the directory of the main module
+                // for external modules we look in the parent directory of the main module
                 var rootModule = parent.ParentModule;
 
                 while (rootModule.ParentModule != null)
@@ -54,6 +56,26 @@ namespace Jint.CommonJS
                     if (File.Exists(innerCandidate))
                     {
                         return innerCandidate;
+                    }
+                }
+
+                // if default fails we try reading package.json
+                string packagePath = Path.Combine(cwd, moduleId, "package.json");
+
+                if (File.Exists(packagePath))
+                {
+                    string packageJson = File.ReadAllText(packagePath);
+
+                    JObject package = JsonConvert.DeserializeObject<JObject>(packageJson);
+
+                    string main = package.ContainsKey("main") && package["main"].Type == JTokenType.String ? (string)package["main"] : null;
+
+                    if (!string.IsNullOrEmpty(main))
+                    {
+                        path = path.Replace("index", "");
+                        path += main;
+
+                        if (File.Exists(path)) return path;
                     }
                 }
 
