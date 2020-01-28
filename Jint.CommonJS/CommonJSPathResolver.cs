@@ -76,6 +76,15 @@ namespace Jint.CommonJS
                         path += main;
 
                         if (File.Exists(path)) return path;
+
+                        foreach (var tryExtension in extensionHandlers.Where(i => i != "default"))
+                        {
+                            string innerCandidate = path + tryExtension;
+                            if (File.Exists(innerCandidate))
+                            {
+                                return innerCandidate;
+                            }
+                        }
                     }
                 }
 
