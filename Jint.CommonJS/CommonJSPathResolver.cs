@@ -21,7 +21,7 @@ namespace Jint.CommonJS
         {
             bool isExternalModule = !moduleId.StartsWith(".") && parent.filePath != null;
 
-            var cwd = parent.filePath != null ? Path.GetDirectoryName(parent.filePath) : Environment.CurrentDirectory;
+            var cwd = parent.filePath != null ? Path.GetDirectoryName(parent.filePath) : Path.IsPathRooted(moduleId) ? moduleId : Environment.CurrentDirectory;
 
             if (isExternalModule && parent.ParentModule != null)
             {
